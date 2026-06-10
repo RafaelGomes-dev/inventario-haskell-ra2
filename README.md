@@ -1,0 +1,1 @@
+# inventario-haskell-ra2
