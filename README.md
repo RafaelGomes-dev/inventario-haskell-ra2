@@ -11,19 +11,19 @@ Sistema de gerenciamento de inventário desenvolvido em **Haskell**, com intera�
 
 ## 📚 Identificação
 
-- **Instituição:** Pontifícia Universidade Católica do Paraná (PUCPR)
-- **Disciplina:** [ NOME DA DISCIPLINA ]
+- **Instituição:** PUCPR
+- **Disciplina:** Programação Logica e Funcional
 - **Professor:** Frank Coelho de Alcantara
 
 ### Integrantes do grupo (ordem alfabética)
 
 | Nome | Usuário no GitHub |
 |------|-------------------|
-| [ NOME COLEGA A ] | [ @usuario ] |
-| [ NOME COLEGA B ] | [ @usuario ] |
+| Erick Meister | [ @usuario ] |
+| [Tiago Figueiredo ] | [ @usuario ] |
 | Rafael Gomes | [@RafaelGomes-dev](https://github.com/RafaelGomes-dev) |
 
-> Ajuste a ordem para ficar alfabética depois de preencher os nomes reais.
+
 
 ---
 
@@ -109,7 +109,7 @@ O sistema separa rigorosamente lógica pura de operações de I/O:
 
 ## 🧪 Cenários de Teste Manuais
 
-> Preencha os resultados observados após executar cada cenário.
+
 
 ### Cenário 1 — Persistência de Estado (Sucesso)
 1. Iniciar o programa sem arquivos de dados.
@@ -164,4 +164,4 @@ O sistema foi populado com no mínimo 10 itens distintos para validação dos re
 | 009 | Fonte 600W | 9 | Componentes |
 | 010 | Placa de Video | 5 | Componentes |
 
-> Ajuste esta tabela conforme os itens que vocês realmente cadastrarem nos testes.
+
