@@ -20,7 +20,7 @@ Sistema de gerenciamento de inventário desenvolvido em **Haskell**, com intera�
 | Nome | Usuário no GitHub |
 |------|-------------------|
 | Erick Meister | [ @usuario ] |
-| [Tiago Figueiredo ] | [ @usuario ] |
+| Tiago Figueiredo  | [ @usuario ] |
 | Rafael Gomes | [@RafaelGomes-dev](https://github.com/RafaelGomes-dev) |
 
 
