@@ -1,6 +1,8 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+
 module Main where
 
-import qualified Data.map as Map
+import qualified Data.Map as Map
 import Data.Time (UTCTime, getCurrentTime)
 import Data.List (isInfixOf, sortBy, maximumBy)
 import Data.Ord (comparing)
@@ -17,7 +19,7 @@ data Item = Item
 
 type Inventario = Map.Map String Item
 
-data Acaolog = Add | Remove | Update | QueryFail
+data AcaoLog = Add | Remove | Update | QueryFail
   deriving (Show, Read, Eq)
 
 data StatusLog = Sucesso | Falha String
