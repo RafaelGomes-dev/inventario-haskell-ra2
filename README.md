@@ -6,8 +6,7 @@ Sistema de gerenciamento de inventário desenvolvido em **Haskell**, com intera�
 
 ## 🔗 Ambiente de Execução
 
-> **Execute o projeto sem modificações aqui:** [ COLE O LINK DO ONLINE GDB / REPL.IT AQUI ]
-
+> **Execute o projeto sem modificações aqui:** https://onlinegdb.com/HC0-WqSBO
 ---
 
 ## 📚 Identificação
