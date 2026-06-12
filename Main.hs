@@ -178,27 +178,152 @@ logsDeErro logs =
         Falha _ -> True
         Sucesso -> False
 
+-- ============================================================
+-- COLEGA B - MODULO DE I/O E PERSISTENCIA
+-- Toda interação com o sistema de arquivos e o terminal fica
+-- aqui. O main definitivo substitui o main temporário do Aluno 1.
+-- ============================================================
+
+arqInventario :: FilePath
+arqInventario = "Inventario.dat"
+
+arqLog :: FilePath
+arqLog = "Auditoria.log"
+
+-- O `seq` força a string inteira a ser avaliada antes de retornar.
+-- Sem isso, readFile é lazy e o handle fica aberto; se depois
+-- tentarmos escrever no mesmo arquivo, o programa trava ou corrompe.
+carregarInventario :: IO Inventario
+carregarInventario =
+  ( do conteudo <- readFile arqInventario
+       conteudo `seq` return (read conteudo) )
+  `catch` (\(_ :: SomeException) -> return Map.empty)
+
+carregarLogs :: IO [LogEntry]
+carregarLogs =
+  ( do conteudo <- readFile arqLog
+       let ls = filter (not . null) (lines conteudo)
+       length ls `seq` return (map read ls) )
+  `catch` (\(_ :: SomeException) -> return [])
+
+salvarInventario :: Inventario -> IO ()
+salvarInventario inv = writeFile arqInventario (show inv)
+
+registrarLog :: LogEntry -> IO ()
+registrarLog le = appendFile arqLog (show le ++ "\n")
+
 main :: IO ()
 main = do
-  tempo <- getCurrentTime
+  hSetBuffering stdout NoBuffering
+  putStrLn "=== Sistema de Inventario (RA2) ==="
+  putStrLn "Comandos: add | remove | update | list | report | sair"
+  inv <- carregarInventario
+  loop inv
 
-  let item1 = Item "001" "Teclado" 10 "Perifericos"
-  let inv0 = Map.empty
+loop :: Inventario -> IO ()
+loop inv = do
+  putStr "\n> "
+  hFlush stdout
+  linha <- getLine
+  let ws = words linha
+  case ws of
+    ("sair":_) ->
+      putStrLn "Encerrando."
 
-  case addItem tempo item1 inv0 of
-    Left erro ->
-      putStrLn ("Erro ao adicionar: " ++ erro)
+    ("list":_) -> do
+      if Map.null inv
+        then putStrLn "(inventario vazio)"
+        else mapM_ (putStrLn . formatItem) (Map.elems inv)
+      loop inv
 
-    Right (inv1, log1) -> do
-      putStrLn "Item adicionado com sucesso."
-      print inv1
-      print log1
+    -- report carrega os logs do arquivo e exibe o relatório
+    ("report":_) -> do
+      logs <- carregarLogs
+      gerarRelatorio logs
+      loop inv
 
-      case removeItem tempo "001" 3 inv1 of
-        Left erro ->
-          putStrLn ("Erro ao remover: " ++ erro)
+    ("add":iid:nm:qtdStr:cat:_) ->
+      case readMaybeInt qtdStr of
+        Nothing -> falhaParse inv
+        Just q  -> do
+          t <- getCurrentTime
+          processarResultado inv Add iid (addItem t (Item iid nm q cat) inv)
 
-        Right (inv2, log2) -> do
-          putStrLn "Item removido com sucesso."
-          print inv2
-          print log2
+    ("remove":iid:qtdStr:_) ->
+      case readMaybeInt qtdStr of
+        Nothing -> falhaParse inv
+        Just q  -> do
+          t <- getCurrentTime
+          processarResultado inv Remove iid (removeItem t iid q inv)
+
+    ("update":iid:qtdStr:_) ->
+      case readMaybeInt qtdStr of
+        Nothing -> falhaParse inv
+        Just q  -> do
+          t <- getCurrentTime
+          processarResultado inv Update iid (updateQty t iid q inv)
+
+    [] -> loop inv
+    _  -> do
+      putStrLn "Comando invalido."
+      loop inv
+
+processarResultado :: Inventario -> AcaoLog -> String
+                   -> Either String ResultadoOperacao -> IO ()
+processarResultado inv ac iid resultado = do
+  t <- getCurrentTime
+  case resultado of
+    Right (novoInv, logE) -> do
+      salvarInventario novoInv
+      registrarLog logE
+      putStrLn "OK."
+      loop novoInv
+    Left erro -> do
+      registrarLog (criarLogFalha t ac iid erro)
+      putStrLn ("ERRO: " ++ erro)
+      loop inv
+
+falhaParse :: Inventario -> IO ()
+falhaParse inv = do
+  putStrLn "ERRO: argumentos invalidos."
+  loop inv
+
+formatItem :: Item -> String
+formatItem it =
+  itemID it ++ " | " ++ nome it
+  ++ " | qtd: " ++ show (quantidade it)
+  ++ " | " ++ categoria it
+
+readMaybeInt :: String -> Maybe Int
+readMaybeInt s =
+  case reads s of
+    [(n, "")] -> Just n
+    _         -> Nothing
+
+-- Extrai o ID do campo detalhes, que sempre começa com "ID=<id> | ..."
+extrairID :: LogEntry -> String
+extrairID le =
+  let d = detalhes le
+  in if take 3 d == "ID="
+       then takeWhile (/= ' ') (drop 3 d)
+       else ""
+
+-- Conta quantas vezes cada ID aparece nos logs e retorna o mais frequente.
+itemMaisMovimentado :: [LogEntry] -> String
+itemMaisMovimentado [] = "(sem movimentacoes)"
+itemMaisMovimentado logs =
+  let ids    = map extrairID logs
+      grupos = Map.toList
+                 (Map.fromListWith (+) [(i, 1 :: Int) | i <- ids, not (null i)])
+  in if null grupos
+       then "(sem movimentacoes)"
+       else fst (maximumBy (comparing snd) grupos)
+
+gerarRelatorio :: [LogEntry] -> IO ()
+gerarRelatorio logs = do
+  putStrLn "===== RELATORIO ====="
+  putStrLn ("Total de eventos      : " ++ show (length logs))
+  let erros = logsDeErro logs
+  putStrLn ("Erros registrados     : " ++ show (length erros))
+  mapM_ (putStrLn . ("  [ERRO] " ++) . detalhes) erros
+  putStrLn ("Item mais movimentado : " ++ itemMaisMovimentado logs)
