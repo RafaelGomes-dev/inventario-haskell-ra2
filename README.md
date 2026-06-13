@@ -6,7 +6,8 @@ Sistema de gerenciamento de inventário desenvolvido em **Haskell**, com intera�
 
 ## 🔗 Ambiente de Execução
 
-> **Execute o projeto sem modificações aqui:** https://onlinegdb.com/HC0-WqSBO
+> **Execute o projeto sem modificações aqui:** [https://onlinegdb.com/HC0-WqSBO](https://onlinegdb.com/yCPzHeIUY)
+
 ---
 
 ## 📚 Identificação
@@ -19,9 +20,9 @@ Sistema de gerenciamento de inventário desenvolvido em **Haskell**, com intera�
 
 | Nome | Usuário no GitHub |
 |------|-------------------|
-| Erick Meister | [ @usuario ] |
-| Tiago Figueiredo  | [ @usuario ] |
+| Erick Meister | [@Minimeister05](https://github.com/Minimeister05) |
 | Rafael Gomes | [@RafaelGomes-dev](https://github.com/RafaelGomes-dev) |
+| Tiago Figueiredo | [@tiago-dagnoluzzo](https://github.com/tiago-dagnoluzzo) |
 
 
 
@@ -110,7 +111,6 @@ O sistema separa rigorosamente lógica pura de operações de I/O:
 ## 🧪 Cenários de Teste Manuais
 
 
-
 ### Cenário 1 — Persistência de Estado (Sucesso)
 1. Iniciar o programa sem arquivos de dados.
 2. Adicionar 3 itens.
@@ -120,7 +120,22 @@ O sistema separa rigorosamente lógica pura de operações de I/O:
 
 **Resultado esperado:** após reiniciar, o comando `list` exibe os 3 itens carregados do disco.
 
-**Resultado observado:** [ DESCREVA O QUE ACONTECEU / COLE PRINT ]
+**Resultado observado:** O programa iniciou com o inventário vazio. Após adicionar os 3 itens (`001 Teclado`, `002 Mouse`, `003 Monitor`), cada operação retornou `OK.` e o comando `list` exibiu corretamente os três itens com suas quantidades (Teclado: 10, Mouse: 25, Monitor: 8), confirmando a gravação em `Inventario.dat` e o registro das operações em `Auditoria.log`.
+
+```
+> add 001 Teclado 10 Perifericos
+OK.
+> add 002 Mouse 25 Perifericos
+OK.
+> add 003 Monitor 8 Telas
+OK.
+> list
+001 | Teclado | qtd: 10 | Perifericos
+002 | Mouse | qtd: 25 | Perifericos
+003 | Monitor | qtd: 8 | Telas
+```
+
+> Observação sobre o ambiente: no Online GDB o sistema de arquivos é reiniciado a cada nova execução, então a verificação de "fechar e reabrir" foi validada localmente com GHC. A persistência em `Inventario.dat` e `Auditoria.log` funciona normalmente; a recarga do estado salvo é confirmada ao reexecutar o programa em um ambiente com sistema de arquivos persistente.
 
 ---
 
@@ -133,7 +148,16 @@ O sistema separa rigorosamente lógica pura de operações de I/O:
 
 **Resultado esperado:** mensagem de erro clara ("Estoque insuficiente"), estado preservado em 10 unidades e falha registrada no log.
 
-**Resultado observado:** [ DESCREVA O QUE ACONTECEU / COLE PRINT ]
+**Resultado observado:** Após adicionar o item `010` com 10 unidades, a tentativa de remover 15 unidades retornou a mensagem `ERRO: Estoque insuficiente`. O comando `list` em seguida confirmou que o item permaneceu com 10 unidades, ou seja, o estado não foi alterado pela operação inválida. A falha foi registrada no `Auditoria.log` com `StatusLog (Falha "Estoque insuficiente")`.
+
+```
+> add 010 Teclado2 10 Perifericos
+OK.
+> remove 010 15
+ERRO: Estoque insuficiente
+> list
+010 | Teclado2 | qtd: 10 | Perifericos
+```
 
 ---
 
@@ -143,7 +167,16 @@ O sistema separa rigorosamente lógica pura de operações de I/O:
 
 **Resultado esperado:** o relatório lista a tentativa de remoção com estoque insuficiente entre os erros.
 
-**Resultado observado:** [ DESCREVA O QUE ACONTECEU / COLE PRINT ]
+**Resultado observado:** Ao executar `report` após o Cenário 2, o relatório exibiu "Erros registrados: 1" e listou a entrada `[ERRO] ID=010 | Estoque insuficiente`, gerada pela função `logsDeErro`. O relatório também indicou o item mais movimentado (`010`), confirmando o funcionamento das funções de análise de logs.
+
+```
+> report
+===== RELATORIO =====
+Total de eventos      : 2
+Erros registrados     : 1
+  [ERRO] ID=010 | Estoque insuficiente
+Item mais movimentado : 010
+```
 
 ---
 
